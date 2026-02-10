@@ -1,0 +1,23 @@
+Perform a code review of the following source code, with a specific focus on discussing potential code smells.
+
+Limit the review to the following four code smells:
+- Feature Envy
+- Blob (God Class)
+- Long Method
+- Data Class
+
+The review should be qualitative in nature and focused exclusively on these code smells, disregarding other concerns such as performance, security, formatting, or naming conventions.
+
+For each of the four code smells listed above, use the following response format:
+
+[Code Smell Name]:
+- Assessment: Present / Not Present
+- Rationale: Concise justification grounded in established software engineering concepts.
+
+If none of the four code smells are assessed as present, state: "None of the four target code smells were assessed as present."
+
+
+Review the following code:
+
+<code file>
+
