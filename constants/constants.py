@@ -31,3 +31,10 @@ MAX_TOKENS = 2048
 # OpenAI API key (optional; use for local development and DO NOT commit real values).
 # Fill this locally with your key; keep it as None in the repository.
 OPENAI_API_KEY = ''
+
+# PostgreSQL (results stored in llm_prompt_results table)
+RESULTS_DATABASE_NAME = "datasets_db"
+RESULTS_DATABASE_HOST = "localhost"
+RESULTS_DATABASE_PORT = 5432
+RESULTS_DATABASE_USER = "postgres"
+RESULTS_DATABASE_PASSWORD = "postgres"
