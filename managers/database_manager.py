@@ -1,13 +1,13 @@
 from typing import List
 
-from execution.experiments import EXPERIMENTS
-from execution.results_repository import (
+from start_here.experiments.definition import EXPERIMENTS
+from database.experiment_log import (
     create_all_tables,
     get_experiment_by_name,
     create_experiment,
     add_prompts_bulk,
 )
-from execution.input_prompt_reader import read_from_file
+from managers.prompt_input_manager import read_from_file
 
 
 def _resolve_prompts(experiment_definition: dict) -> List[str]:
@@ -18,7 +18,7 @@ def _resolve_prompts(experiment_definition: dict) -> List[str]:
     return []
 
 
-def run_setup() -> None:
+def load_database() -> None:
     create_all_tables()
     for experiment_definition in EXPERIMENTS:
         name = experiment_definition["name"]
@@ -38,4 +38,4 @@ def run_setup() -> None:
 
 
 if __name__ == "__main__":
-    run_setup()
+    load_database()

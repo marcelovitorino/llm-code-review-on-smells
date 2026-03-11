@@ -7,10 +7,10 @@ This integration uses the OpenAI API to generate text using OpenAI models
 Requires an OpenAI API key configured via environment variable OPENAI_API_KEY
 or passed as a parameter.
 """
+import os
 from typing import Optional
 
 from integrations.base_llm_provider import BaseLLMProvider
-from constants.constants import OPENAI_API_KEY
 
 
 # Available OpenAI models with their details
@@ -58,11 +58,11 @@ class OpenAILLMProvider(BaseLLMProvider):
         
         try:
             from openai import OpenAI
-            effective_api_key = api_key or OPENAI_API_KEY
+            effective_api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
             if not effective_api_key:
                 raise ValueError(
                     "OpenAI API key not configured. "
-                    "Set constants.OPENAI_API_KEY or pass api_key as a parameter."
+                    "Set OPENAI_API_KEY in start_here/experiments/constants.py or pass api_key."
                 )
             self.client = OpenAI(api_key=effective_api_key)
         except ImportError:

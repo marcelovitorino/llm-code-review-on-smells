@@ -1,4 +1,4 @@
-from constants.constants import TEMPERATURE, TOP_P, MAX_TOKENS
+from start_here.experiments.constants import TEMPERATURE, TOP_P, MAX_TOKENS
 
 EXPERIMENTS = [
     {

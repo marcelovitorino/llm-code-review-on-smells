@@ -1,7 +1,5 @@
 """
-Input Prompt Reader
-
-Reads prompts from TXT files. Supports:
+Prompt input manager: reads prompts from TXT files. Supports:
 - Prompts separated by "---" on its own line; each prompt can be multi-line and contain empty lines.
 - If no "---" is found, the entire file is read as one prompt (empty lines preserved).
 
@@ -9,7 +7,7 @@ Automatically searches in prompts/ directory if file not found in current locati
 """
 from pathlib import Path
 from typing import List
-from constants.constants import PROMPTS_DIR
+from start_here.experiments.constants import PROMPTS_DIR
 
 PROMPT_SEPARATOR = "---"
 

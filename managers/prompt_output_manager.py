@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Dict
 
-from execution.results_repository import insert_results
+from database.experiment_log import insert_results
 
 
 def save_results(
