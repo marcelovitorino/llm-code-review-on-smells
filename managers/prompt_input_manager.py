@@ -7,9 +7,13 @@ Automatically searches in prompts/ directory if file not found in current locati
 """
 from pathlib import Path
 from typing import List
+
 from start_here.experiments.constants import PROMPTS_DIR
 
 PROMPT_SEPARATOR = "---"
+
+# Resolve prompts dir from this file so it works regardless of cwd (e.g. notebook in start_here/notebooks)
+_PROMPTS_DIR_FROM_REPO = Path(__file__).resolve().parent.parent / "prompts"
 
 
 def read_from_file(file_path: str, separator: str = PROMPT_SEPARATOR) -> List[str]:
@@ -33,9 +37,11 @@ def read_from_file(file_path: str, separator: str = PROMPT_SEPARATOR) -> List[st
     path = Path(file_path)
 
     if not path.exists():
-        prompts_path = PROMPTS_DIR / path.name
-        if prompts_path.exists():
-            path = prompts_path
+        for base in (PROMPTS_DIR, _PROMPTS_DIR_FROM_REPO):
+            candidate = base / path.name
+            if candidate.exists():
+                path = candidate
+                break
         else:
             raise FileNotFoundError(f"File not found: {file_path}")
 

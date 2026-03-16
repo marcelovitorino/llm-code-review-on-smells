@@ -104,6 +104,19 @@ def add_prompts_bulk(experiment_id: int, prompt_texts: List[str]) -> List[int]:
         connection.close()
 
 
+def delete_prompts_for_experiment(experiment_id: int) -> None:
+    connection = _open_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM prompt WHERE experiment_id = %s",
+                (experiment_id,),
+            )
+        connection.commit()
+    finally:
+        connection.close()
+
+
 def get_experiment_by_name(name: str) -> Optional[Mapping[str, Any]]:
     connection = _open_connection()
     try:
@@ -186,6 +199,7 @@ def insert_results(
             (
                 experiment_id,
                 result["prompt_id"],
+                result.get("dataset_id"),
                 model_key,
                 model_name,
                 result.get("prompt"),
@@ -205,6 +219,7 @@ def insert_results(
             INSERT INTO llm_prompt_results (
                 experiment_id,
                 prompt_id,
+                dataset_id,
                 model_key,
                 model_name,
                 prompt,

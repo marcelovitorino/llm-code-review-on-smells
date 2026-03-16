@@ -67,6 +67,19 @@ def ensure_schema(connection: psycopg2.extensions.connection) -> None:
                 ADD COLUMN prompt_id INTEGER REFERENCES prompt(id) ON DELETE CASCADE
                 """
             )
+        cursor.execute(
+            """
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'llm_prompt_results' AND column_name = 'dataset_id'
+            """
+        )
+        if not cursor.fetchone():
+            cursor.execute(
+                """
+                ALTER TABLE llm_prompt_results
+                ADD COLUMN dataset_id TEXT
+                """
+            )
     else:
         cursor.execute(
             """
@@ -74,6 +87,7 @@ def ensure_schema(connection: psycopg2.extensions.connection) -> None:
                 id SERIAL PRIMARY KEY,
                 experiment_id INTEGER NOT NULL REFERENCES experiment_setup(id) ON DELETE CASCADE,
                 prompt_id INTEGER NOT NULL REFERENCES prompt(id) ON DELETE CASCADE,
+                dataset_id TEXT,
                 model_key TEXT NOT NULL,
                 model_name TEXT NOT NULL,
                 prompt TEXT NOT NULL,
