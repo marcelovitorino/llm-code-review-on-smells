@@ -1,0 +1,419 @@
+Act as a senior software developer performing a qualitative code review focused on code smells.
+
+TASK
+
+Review ONE complete source code file and provide a professional code review discussing potential code smells.
+
+The goal is to produce a natural, cohesive code review, similar to what would be written in a real pull request.
+
+Before start reviewing the code, understand the file as a whole:
+- What is the purpose of the class?
+- How do its methods relate to each other?
+- What responsibilities does it hold?
+
+Focus ONLY on the following code smells when relevant:
+- Long Method
+- Feature Envy
+- Data Class
+
+Do NOT consider performance, security, formatting, or naming conventions.
+
+IMPORTANT
+
+- Write the review as a set of review comments, each addressing a specific issue found in the code.
+- Do NOT label or classify issues by smell name. Describe what you observe and why it matters, as a reviewer naturally would.
+- Do NOT force coverage of all smells. Only comment when a genuine issue is found.
+- Do NOT analyze each smell separately. A single comment may touch on multiple concerns if they are related.
+- You may assume general software engineering context (e.g., maintainability, cohesion), but do NOT invent specific system details.
+
+CODE SMELLS (DEFINITIONS) [Source: Refactoring: Improving the Design of Existing Code, by Martin Fowler]
+
+1) Long Method 
+Description: The object programs that live best and longest are those with short methods. Programmers new
+to objects often feel that no computation ever takes place, that object programs are endless
+sequences of delegation. When you have lived with such a program for a few years, however,
+you learn just how valuable all those little methods are. All of the payoffs of indirection—
+explanation, sharing, and choosing—are supported by little methods (see Indirection and
+Refactoring on page 61).
+Since the early days of programming people have realized that the longer a procedure is, the
+more difficult it is to understand. Older languages carried an overhead in subroutine calls, which
+deterred people from small methods. Modern OO languages have pretty much eliminated that
+overhead for in-process calls. There is still an overhead to the reader of the code because you
+have to switch context to see what the subprocedure does. Development environments that allow
+you to see two methods at once help to eliminate this step, but the real key to making it easy to
+understand small methods is good naming. If you have a good name for a method you don't need
+to look at the body.
+The net effect is that you should be much more aggressive about decomposing methods. A
+heuristic we follow is that whenever we feel the need to comment something, we write a method
+instead. Such a method contains the code that was commented but is named after the intention
+of the code rather than how it does it. We may do this on a group of lines or on as little as a single
+line of code. We do this even if the method call is longer than the code it replaces, provided the
+method name explains the purpose of the code. The key here is not method length but the
+semantic distance between what the method does and how it does it.
+Ninety-nine percent of the time, all you have to do to shorten a method is Extract Method. Find
+parts of the method that seem to go nicely together and make a new method.
+If you have a method with lots of parameters and temporary variables, these elements get in the
+way of extracting methods. If you try to use Extract Method, you end up passing so many of the
+parameters and temporary variables as parameters to the extracted method that the result is
+scarcely more readable than the original. You can often use Replace Temp with Query to
+eliminate the temps. Long lists of parameters can be slimmed down with Introduce Parameter
+Object and Preserve Whole Object.
+If you've tried that, and you still have too many temps and parameters, it's time to get out the
+heavy artillery: Replace Method with Method Object.
+How do you identify the clumps of code to extract? A good technique is to look for comments.
+They often signal this kind of semantic distance. A block of code with a comment that tells you
+what it is doing can be replaced by a method whose name is based on the comment. Even a
+single line is worth extracting if it needs explanation.
+Conditionals and loops also give signs for extractions. Use Decompose Conditional to deal
+with conditional expressions. With loops, extract the loop and the code within the loop into its own
+method.
+
+
+2) Feature Envy
+Description: The whole point of objects is that they are a technique to package data with the processes used
+on that data. A classic smell is a method that seems more interested in a class other than the one
+it actually is in. The most common focus of the envy is the data. We've lost count of the times
+we've seen a method that invokes half-a-dozen getting methods on another object to calculate
+some value. Fortunately the cure is obvious, the method clearly wants to be elsewhere, so you
+use Move Method to get it there. Sometimes only part of the method suffers from envy; in that
+case use Extract Method on the jealous bit and Move Method to give it a dream home.
+Of course not all cases are cut-and-dried. Often a method uses features of several classes, so
+which one should it live with? The heuristic we use is to determine which class has most of the
+data and put the method with that data. This step is often made easier if Extract Method is used
+to break the method into pieces that go into different places.
+Of course there are several sophisticated patterns that break this rule. From the Gang of Four
+[Gang of Four] Strategy and Visitor immediately leap to mind. Kent Beck's Self Delegation [Beck]
+is another. You use these to combat the divergent change smell. The fundamental rule of thumb
+is to put things together that change together. Data and the behavior that references that data
+usually change together, but there are exceptions. When the exceptions occur, we move the
+behavior to keep changes in one place. Strategy and Visitor allow you to change behavior easily,
+because they isolate the small amount of behavior that needs to be overridden, at the cost of
+further indirection.
+
+3) Data Class
+These are classes that have fields, getting and setting methods for the fields, and nothing else.
+Such classes are dumb data holders and are almost certainly being manipulated in far too much
+detail by other classes. In early stages these classes may have public fields. If so, you should
+immediately apply Encapsulate Field before anyone notices. If you have collection fields, check
+to see whether they are properly encapsulated and apply Encapsulate Collection if they aren't.
+Use Remove Setting Method on any field that should not be changed.
+Look for where these getting and setting methods are used by other classes. Try to use Move
+Method to move behavior into the data class. If you can't move a whole method, use Extract
+Method to create a method that can be moved. After a while you can start using Hide Method
+on the getters and setters.
+Data classes are like children. They are okay as a starting point, but to participate as a grownup
+object, they need to take some responsibility.
+
+OUTPUT
+
+Write a professional code review as a set of review comments.
+
+- Start with a brief summary of what the class does and its overall structure.
+- Then write individual review comments, each addressing a specific issue.
+- Each comment should:
+  - describe the issue,
+  - point to evidence in the code,
+  - explain why it matters,
+  - suggest an improvement.
+
+- You may reference well-known practices or documentation (e.g., Fowler, refactoring patterns, or general software design principles). References may include URLs when appropriate.
+
+- If no relevant smells are found, write a brief review stating that no issues related to the target smells were identified.
+
+FEW-SHOT EXAMPLES
+
+Example 1:
+
+Code:
+public class LoggerLogic {
+
+    private final LoggerDAO loggerDAO;
+    private final AuditManager auditManager;
+
+    public LoggerLogic(LoggerDAO loggerDAO, AuditManager auditManager) {
+        this.loggerDAO = loggerDAO;
+        this.auditManager = auditManager;
+    }
+
+    public LoggerTO setLevel(String name, Level level, LoggerType expectedType) {
+        SyncopeLogger syncopeLogger = loggerDAO.find(name);
+        if (syncopeLogger == null) {
+            syncopeLogger = new SyncopeLogger();
+            syncopeLogger.setKey(name);
+            syncopeLogger.setType(expectedType);
+        }
+
+        syncopeLogger.setLevel(LoggerLevel.fromLevel(level));
+        syncopeLogger = loggerDAO.save(syncopeLogger);
+
+        boolean isAudit = LoggerType.AUDIT.equals(syncopeLogger.getType());
+
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        String domainAuditLoggerName = AuditManagerImpl.getDomainAuditEventLoggerName(
+                AuthContextUtils.getDomain(), syncopeLogger.getKey());
+
+        LoggerConfig logConf;
+        if (SyncopeConstants.ROOT_LOGGER.equals(name)) {
+            logConf = ctx.getConfiguration().getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        } else if (isAudit) {
+            logConf = ctx.getConfiguration().getLoggerConfig(domainAuditLoggerName);
+        } else {
+            logConf = ctx.getConfiguration().getLoggerConfig(name);
+        }
+
+        logConf.setLevel(level);
+
+        if (isAudit) {
+            for (AuditAppender appender : auditManager.getAuditAppenders()) {
+                if (appender.getEvents().contains(name)) {
+                    AuditLoggerName auditLoggerName = AuditLoggerName.fromLoggerName(name);
+                    LoggerConfig auditLogConf = new LoggerConfig(domainAuditLoggerName, null, false);
+                    auditLogConf.setLevel(level);
+
+                    for (String targetAppenderName : appender.getTargetAppenderNames()) {
+                        Appender targetAppender = ctx.getConfiguration().getAppender(targetAppenderName);
+                        if (targetAppender == null) {
+                            targetAppender = appender.buildAppender(auditLoggerName, targetAppenderName);
+                            ctx.getConfiguration().addAppender(targetAppender);
+                        }
+                        auditLogConf.addAppender(targetAppender, Level.DEBUG, null);
+                    }
+
+                    ctx.getConfiguration().addLogger(domainAuditLoggerName, auditLogConf);
+                }
+            }
+        }
+
+        ctx.updateLoggers();
+
+        LoggerTO result = new LoggerTO();
+        result.setKey(syncopeLogger.getKey());
+        result.setLevel(syncopeLogger.getLevel());
+        return result;
+    }
+
+    public List<LoggerTO> list(LoggerType type) {
+        return loggerDAO.findAll(type).stream()
+                .map(logger -> {
+                    LoggerTO to = new LoggerTO();
+                    to.setKey(logger.getKey());
+                    to.setLevel(logger.getLevel());
+                    return to;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void delete(String name) {
+        loggerDAO.delete(name);
+    }
+}
+
+Review:
+
+`LoggerLogic` manages logger configuration: listing, deleting, and setting log levels via a DAO. The `list` and `delete` methods are straightforward, each handling a single responsibility.
+
+The `setLevel` method is doing too much. Beyond persisting the new log level, it resolves audit-specific logger names via `AuditManagerImpl`, retrieves or creates `LoggerConfig` entries through a three-way conditional, iterates over audit appenders to build and register new appender instances, and finally triggers a global logger context update. These are at least four distinct responsibilities packed into a single method, making it difficult to follow, test in isolation, or modify without risk of unintended side effects. The audit appender configuration logic (the nested loop resolving target appenders and registering them) could be extracted into a dedicated method. The same applies to the logger config resolution block. Extracting both would reduce `setLevel` to a high-level orchestration method that delegates to well-named helpers (see https://refactoring.com/catalog/extractMethod.html).
+
+
+Example 2:
+
+Code:
+public class DAGImpl implements DAG {
+
+    private final Configuration dagConf;
+    private final Map<String, Vertex> vertices;
+
+    public DAGImpl(Configuration dagConf) {
+        this.dagConf = dagConf;
+        this.vertices = new HashMap<>();
+    }
+
+    private static void parseVertexEdges(DAGImpl dag, Map<String, EdgePlan> edgePlans,
+                                         Vertex vertex) {
+        Map<Vertex, Edge> inVertices = new HashMap<>();
+        Map<Vertex, Edge> outVertices = new HashMap<>();
+
+        for (Map.Entry<Vertex, List<Edge>> entry : vertex.getInputVerticesMap().entrySet()) {
+            inVertices.put(entry.getKey(), entry.getValue().get(0));
+        }
+        for (Map.Entry<Vertex, List<Edge>> entry : vertex.getOutputVerticesMap().entrySet()) {
+            outVertices.put(entry.getKey(), entry.getValue().get(0));
+        }
+
+        vertex.setInputVertices(inVertices);
+        vertex.setOutputVertices(outVertices);
+
+        boolean cleanupShuffleData = dag.dagConf.getInt(
+                TezConfiguration.TEZ_AM_VERTEX_CLEANUP_HEIGHT,
+                TezConfiguration.TEZ_AM_VERTEX_CLEANUP_HEIGHT_DEFAULT) > 0
+                && ShuffleUtils.isTezShuffleHandler(dag.dagConf);
+
+        if (cleanupShuffleData) {
+            int deletionHeight = dag.dagConf.getInt(
+                    TezConfiguration.TEZ_AM_VERTEX_CLEANUP_HEIGHT,
+                    TezConfiguration.TEZ_AM_VERTEX_CLEANUP_HEIGHT_DEFAULT);
+            Set<Vertex> ancestors = new HashSet<>();
+            Set<Vertex> children = new HashSet<>();
+
+            getSpannedVerticesAncestors(vertex, ancestors, deletionHeight);
+            getSpannedVerticesChildren(vertex, children, deletionHeight);
+            vertex.setAncestors(ancestors);
+            vertex.setChildren(children);
+            vertex.setIncompleteChildrenVertices(children.size());
+        }
+    }
+
+    private static void getSpannedVerticesAncestors(Vertex vertex, Set<Vertex> ancestors,
+                                                     int level) {
+        if (level == 0) {
+            ancestors.add(vertex);
+            return;
+        }
+        if (level == 1) {
+            ancestors.addAll(vertex.getInputVertices().keySet());
+            return;
+        }
+        vertex.getInputVertices().forEach((v, edge) ->
+                getSpannedVerticesAncestors(v, ancestors, level - 1));
+    }
+
+    private static void getSpannedVerticesChildren(Vertex vertex, Set<Vertex> children,
+                                                    int level) {
+        if (level == 0) {
+            children.add(vertex);
+            return;
+        }
+        if (level == 1) {
+            children.addAll(vertex.getOutputVertices().keySet());
+            return;
+        }
+        vertex.getOutputVertices().forEach((v, edge) ->
+                getSpannedVerticesChildren(v, children, level - 1));
+    }
+
+    public void vertexCompleted(Vertex completedVertex) {
+        // ... DAG-level completion logic ...
+    }
+
+    public Map<String, Vertex> getVertices() {
+        return vertices;
+    }
+}
+
+Review:
+
+`DAGImpl` is responsible for managing the lifecycle and structure of a DAG (Directed Acyclic Graph) of vertices. The `vertexCompleted` and `getVertices` methods deal with DAG-level concerns, which is consistent with the class's responsibility.
+
+The `parseVertexEdges` method goes beyond DAG-level orchestration. After setting up input/output edges — which is reasonable DAG wiring — it reads the vertex's relationships, traverses them recursively via `getSpannedVerticesAncestors` and `getSpannedVerticesChildren`, and directly mutates vertex-owned fields (`ancestors`, `children`, `incompleteChildrenVertices`). All of this logic operates exclusively on data owned by `Vertex`, not by `DAGImpl`. Moving this initialization into `VertexImpl` (e.g., `vertex.initShuffleDeletionContext(deletionHeight)`) would keep the vertex relationship management co-located with the data it operates on and avoid exposing vertex internals to `DAGImpl` (see https://refactoring.com/catalog/moveMethod.html).
+
+
+Example 3:
+
+Code:
+public class AMRecord {
+    private static final String APP_ID_RECORD_KEY = "appId";
+    private static final String HOST_NAME_RECORD_KEY = "hostName";
+    private static final String HOST_IP_RECORD_KEY = "hostIp";
+    private static final String PORT_RECORD_KEY = "port";
+    private static final String EXTERNAL_ID_KEY = "externalId";
+    private static final String COMPUTE_GROUP_NAME_KEY = "computeName";
+
+    private final ApplicationId appId;
+    private final String hostName;
+    private final String hostIp;
+    private final int port;
+    private final String externalId;
+    private final String computeName;
+
+    private ServiceRecord serviceRecord;
+
+    public AMRecord(ApplicationId appId, String hostName, String hostIp, int port,
+                    String externalId, String computeName) {
+        this.appId = appId;
+        this.hostName = hostName;
+        this.hostIp = hostIp;
+        this.port = port;
+        this.externalId = Optional.ofNullable(externalId).orElse("");
+        this.computeName = Optional.ofNullable(computeName)
+                .orElse(ZkConfig.DEFAULT_COMPUTE_GROUP_NAME);
+    }
+
+    public AMRecord(AMRecord other) {
+        this.appId = other.appId;
+        this.hostName = other.hostName;
+        this.hostIp = other.hostIp;
+        this.port = other.port;
+        this.externalId = other.externalId;
+        this.computeName = other.computeName;
+        this.serviceRecord = other.serviceRecord;
+    }
+
+    public AMRecord(ServiceRecord serviceRecord) {
+        this.appId = ApplicationId.fromString(serviceRecord.get(APP_ID_RECORD_KEY));
+        this.hostName = serviceRecord.get(HOST_NAME_RECORD_KEY);
+        this.hostIp = serviceRecord.get(HOST_IP_RECORD_KEY);
+        this.port = Integer.parseInt(serviceRecord.get(PORT_RECORD_KEY));
+        this.externalId = serviceRecord.get(EXTERNAL_ID_KEY);
+        this.computeName = serviceRecord.get(COMPUTE_GROUP_NAME_KEY);
+    }
+
+    public ApplicationId getApplicationId() { return appId; }
+    public String getHostName() { return hostName; }
+    public String getHostIp() { return hostIp; }
+    public int getPort() { return port; }
+    public String getExternalId() { return externalId; }
+    public String getComputeName() { return computeName; }
+
+    public ServiceRecord toServiceRecord() {
+        if (serviceRecord != null) {
+            return serviceRecord;
+        }
+        serviceRecord = new ServiceRecord();
+        serviceRecord.set(APP_ID_RECORD_KEY, appId);
+        serviceRecord.set(HOST_NAME_RECORD_KEY, hostName);
+        serviceRecord.set(HOST_IP_RECORD_KEY, hostIp);
+        serviceRecord.set(PORT_RECORD_KEY, port);
+        serviceRecord.set(EXTERNAL_ID_KEY, externalId);
+        serviceRecord.set(COMPUTE_GROUP_NAME_KEY, computeName);
+        return serviceRecord;
+    }
+
+    @Override
+    public String toString() {
+        return toServiceRecord().attributes().toString();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other instanceof AMRecord otherRecord) {
+            return appId.equals(otherRecord.appId)
+                && hostName.equals(otherRecord.hostName)
+                && hostIp.equals(otherRecord.hostIp)
+                && port == otherRecord.port
+                && externalId.equals(otherRecord.externalId)
+                && computeName.equals(otherRecord.computeName);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(appId, hostName, hostIp, externalId, computeName, port);
+    }
+}
+
+Review:
+
+`AMRecord` represents metadata about a running Application Master instance: application ID, hostname, IP, port, and identifiers for external tracking and compute group membership. It provides three constructors (direct, copy, and deserialization from `ServiceRecord`), a `toServiceRecord` method for the reverse conversion, and standard `equals`/`hashCode`/`toString` overrides.
+
+The class holds six fields, all exposed through getters, with no behavior beyond construction, serialization, and equality checks. There is no validation (e.g., whether the port is within a valid range, or whether the hostname and IP are consistent), no derived computation, and no domain logic related to what an AM record actually represents in the system. Logic operating on this data almost certainly lives elsewhere, scattered across consumers. Introducing behavior such as input validation in the constructor would improve cohesion and make the class a more responsible owner of its own data (see https://refactoring.com/catalog/encapsulateField.html).
+
+The `toServiceRecord` method performs lazy initialization by caching the result in an instance field, but the class offers no way to detect whether the cached record is stale if the object is reused in a different context. Encapsulating the serialization lifecycle more explicitly would prevent subtle bugs from cached state.
+
+
+NOW REVIEW THE FOLLOWING CODE:
+
+<code file>

@@ -1,21 +1,18 @@
 Perform a code review of the following source code, with a specific focus on discussing potential code smells.
 
-Limit the review to the following four code smells:
+Limit the review to the following three code smells:
 1) Feature Envy
 A method that appears more interested in the data or methods of another class than in those of its own class, suggesting misplaced responsibility.
 
-2) Blob (God Class)
-A class that centralizes too many responsibilities, contains excessive complexity, and appears to control or depend on too many parts of the system, indicating low cohesion and poor distribution of responsibilities.
-
-3) Long Method
+2) Long Method
 A method that is excessively long or complex, making it difficult to understand, maintain, or modify.
 
-4) Data Class
+3) Data Class
 A class that mainly contains fields and simple accessors or mutators, with little or no meaningful behavior of its own, suggesting that behavior may be misplaced elsewhere.
 
 The review should be qualitative in nature and focused exclusively on these code smells, disregarding other concerns such as performance, security, formatting, or naming conventions.
 
-For each of the four code smells listed above, use the following response format:
+For each of the three code smells listed above, use the following response format:
 
 [Code Smell Name]:
 - Assessment: Present / Not Present
