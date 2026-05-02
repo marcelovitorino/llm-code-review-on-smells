@@ -1,0 +1,65 @@
+<View>
+  <Style>
+    .oracle           { background:#eff6ff; border-left:3px solid #2563eb; padding:14px 16px; margin-bottom:12px; border-radius:6px; }
+    .smell-alvo       { font-size:1.35em; font-weight:700; color:#1e3a8a; margin:0; }
+    .oracle-meta      { margin-top:6px; font-size:0.9em; color:#475569; font-family:ui-monospace,monospace; }
+    .oracle-meta div  { margin-top:4px; word-break:break-all; }
+    .oracle-path      { color:#64748b; }
+    .h           { font-weight:600; color:#1e293b; margin:8px 0 4px; }
+    .meta        { color:#475569; font-size:0.9em; }
+    .snippet-box { max-height:300px; overflow:auto; border:1px solid #e2e8f0; border-radius:6px; padding:6px; background:#ffffff; }
+    .file-box    { max-height:400px; overflow:auto; border:1px solid #e2e8f0; border-radius:6px; padding:6px; background:#ffffff; }
+    .resp        { background:#fef9c3; border-left:3px solid #ca8a04; padding:12px; margin-top:12px; border-radius:6px; white-space:pre-wrap; }
+    .codebook-box { margin:8px 0; }
+    .codebook    { width:100%; border-collapse:collapse; font-size:0.9em; }
+    .codebook th, .codebook td { padding:6px 10px; border:1px solid #e2e8f0; text-align:left; vertical-align:top; }
+    .codebook th { background:#f1f5f9; font-weight:600; }
+    .codebook td:first-child { white-space:nowrap; }
+    .decision-tree { background:#fafafa; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; margin:14px 0; font-size:0.85em; color:#334155; }
+    .dt-title    { font-weight:600; margin-bottom:4px; }
+    .decision-tree pre { white-space:pre; font-family:ui-monospace,monospace; margin:0; }
+  </Style>
+
+  <View className="oracle">
+    <Text name="smell_alvo" value="Smell-alvo: $oracle_smell" className="smell-alvo"/>
+    <HyperText name="oracle_details" value="$oracle_details_html"/>
+  </View>
+
+  <View className="h">Smell-alvo (código focado)</View>
+  <View className="snippet-box">
+    <HyperText name="snippet" value="$snippet_html"/>
+  </View>
+
+  <View className="h">Arquivo inteiro (o que o LLM viu) — linhas $start_line–$end_line destacadas</View>
+  <View className="file-box">
+    <HyperText name="file" value="$file_html"/>
+  </View>
+
+  <View className="resp">
+    <View className="h">Resposta do LLM</View>
+    <Text name="llm_response" value="$llm_response"/>
+  </View>
+
+  <View className="h">Codebook — categorias I/H/M/U</View>
+  <View className="codebook-box">
+    <HyperText name="codebook" value="$codebook_html"/>
+  </View>
+
+  <View className="h">Classificação (atalhos 1/2/3/4)</View>
+  <Choices name="label" toName="llm_response" choice="single" required="true" showInLine="true">
+    <Choice value="I" alias="Instrumental" hotkey="1"/>
+    <Choice value="H" alias="Helpful"      hotkey="2"/>
+    <Choice value="M" alias="Misleading"   hotkey="3"/>
+    <Choice value="U" alias="Uncertain"    hotkey="4"/>
+  </Choices>
+
+  <Choices name="needs_review" toName="llm_response" choice="multiple">
+    <Choice value="needs_review" alias="Marcar como caso ambíguo (atalho: d)" hotkey="d"/>
+  </Choices>
+
+  <View className="h">Comentário (sinônimos, justificativa, dúvida para árbitro)</View>
+  <TextArea name="comment" toName="llm_response" rows="6" maxSubmissions="1"
+            placeholder="Ex: 'Long Function aceito como sinônimo de Long Method'; 'parte H, parte M — consultar árbitro'"/>
+
+  <HyperText name="decision_tree" value="$decision_tree_html"/>
+</View>
