@@ -1,179 +1,156 @@
-import requests
 import json
-import time
 import os
-from tqdm import tqdm
+import time
+
 import pandas as pd
+import requests
+from tqdm import tqdm
 
-TOKEN = os.getenv('GITHUB_TOKEN')
 
-# --------------------------------------------------------------------
-# Fetch FULL file + snippet
-# --------------------------------------------------------------------
-def fetch_file_and_snippet(repo_url, commit_hash, file_path, start_line, end_line, request_count):
+TOKEN = os.getenv("GITHUB_TOKEN")
 
-    # Controla limite de requests
+TARGET_SMELLS = ["feature envy", "long method", "data class"]
+RELEVANT_SEVERITIES = ["major", "critical"]
+# Critical wins over major when reviewers disagree on the same (file, smell)
+SEVERITY_PRIORITY = {"critical": 0, "major": 1}
+
+
+def _dedup_by_file_and_smell(df, file_path_col):
+    df = df.assign(_sev_rank=df["severity"].map(SEVERITY_PRIORITY))
+    df = (
+        df.sort_values(["_sev_rank", "id"])
+        .drop_duplicates(
+            subset=["repository" if file_path_col == "path" else "repo_url",
+                    "commit_hash", file_path_col, "smell"],
+            keep="first",
+        )
+        .drop(columns="_sev_rank")
+    )
+    return df
+
+
+def fetch_full_file(repo_url, commit_hash, file_path, request_count):
     if request_count > 4500:
         print("Reached 4500 requests, sleeping for 1 hour ...")
         time.sleep(3600)
         request_count = 0
 
-    # Normaliza nome do repositório para raw.githubusercontent URL
     repo_name = (
         repo_url.replace("git@", "")
-                .replace("https://", "")
-                .replace("http://", "")
-                .replace("github.com:", "")
-                .replace("github.com/", "")
-                .replace(".git", "")
+        .replace("https://", "")
+        .replace("http://", "")
+        .replace("github.com:", "")
+        .replace("github.com/", "")
+        .replace(".git", "")
     )
-
     raw_url = f"https://raw.githubusercontent.com/{repo_name}/{commit_hash}/{file_path.lstrip('/')}"
-    headers = {"Authorization": f"token {TOKEN}"}
+    headers = {"Authorization": f"token {TOKEN}"} if TOKEN else {}
 
     response = requests.get(raw_url, headers=headers)
-
     if response.status_code == 200:
-        full_file = response.text
-        lines = full_file.splitlines()
-        snippet = "\n".join(lines[start_line-1:end_line])
-        return snippet, full_file, request_count + 1
-
-    else:
-        print(f"Failed to fetch file: {raw_url} (status: {response.status_code})")
-        return None, None, request_count + 1
+        return response.text, request_count + 1
+    print(f"Failed to fetch file: {raw_url} (status: {response.status_code})")
+    return None, request_count + 1
 
 
-# --------------------------------------------------------------------
-# Process CSV (limit 10 rows) + Save JSON + Save CSV
-# --------------------------------------------------------------------
-def process_dataset(original_csv_file, json_file, csv_file_with_source_code, batch_size=50):
-
-    request_count = 0
-    json_data = []
-    csv_rows = []
-    counter = 0
-    skipped_ids = []
-    error_ids = []
-
-    # Leitura manual, dataset separado por ';'
-    with open(original_csv_file, "r") as f:
-        next(f)  # pular header
-
-        for line in tqdm(f, desc="Fetching code + source files"):
-
-            try:
-                parts = line.strip().split(";")
-                
-                # Validate we have enough fields
-                if len(parts) < 15:
-                    print(f"Warning: Line {counter + 1} has only {len(parts)} fields, expected 15. Skipping.")
-                    error_ids.append(counter + 1)
-                    counter += 1
-                    continue
-                
-                (original_id, _, _, smell, severity, _, type_field, code_name, repo_url,
-                 commit_hash, file_path, start_line, end_line, _, _) = parts
-
-                start_line = int(start_line)
-                end_line = int(end_line)
-
-                snippet, full_file, request_count = fetch_file_and_snippet(
-                    repo_url, commit_hash, file_path, start_line, end_line, request_count
-                )
-
-                if snippet and full_file:
-                    entry = {
-                        "id": original_id,  # Preserve original ID
-                        "repo_url": repo_url,
-                        "commit_hash": commit_hash,
-                        "file_path": file_path,
-                        "start_line": start_line,
-                        "end_line": end_line,
-                        "code_snippet": snippet,
-                        "file_content": full_file,
-                        "smell": smell,
-                        "severity": severity,
-                        "type": type_field,
-                        "code_name": code_name
-                    }
-
-                    json_data.append(entry)
-                    csv_rows.append(entry)
-                else:
-                    # Track skipped entries due to fetch failure
-                    skipped_ids.append({
-                        "id": original_id,
-                        "repo_url": repo_url,
-                        "file_path": file_path,
-                        "reason": "Failed to fetch file"
-                    })
-                    print(f"Warning: Failed to fetch file for ID {original_id}")
-
-            except ValueError as e:
-                print(f"Error parsing line {counter + 1}: {e}")
-                error_ids.append(counter + 1)
-            except Exception as e:
-                print(f"Unexpected error processing line {counter + 1}: {e}")
-                error_ids.append(counter + 1)
-
-            counter += 1
-            if counter % batch_size == 0:
-                save_json(json_file, json_data)
-                json_data = []
-
-    # salvar json remanescente
-    if json_data:
-        save_json(json_file, json_data)
-
-    print(f"Completed JSON saving. Output: {json_file}")
-    print(f"Saving CSV to: {csv_file_with_source_code}")
-
-    # Salva CSV com pandas
-    df = pd.DataFrame(csv_rows)
-    df.to_csv(csv_file_with_source_code, index=False)
-    print("CSV saved successfully.")
-    
-    # Report statistics
-    print(f"\n=== Processing Summary ===")
-    print(f"Total rows processed: {counter}")
-    print(f"Successfully processed: {len(csv_rows)}")
-    print(f"Skipped (fetch failures): {len(skipped_ids)}")
-    print(f"Errors (parsing issues): {len(error_ids)}")
-    
-    if skipped_ids:
-        skipped_file = csv_file_with_source_code.replace(".csv", "_skipped.csv")
-        skipped_df = pd.DataFrame(skipped_ids)
-        skipped_df.to_csv(skipped_file, index=False)
-        print(f"Skipped entries saved to: {skipped_file}")
-    
-    if error_ids:
-        print(f"Error line numbers: {error_ids[:10]}{'...' if len(error_ids) > 10 else ''}")
+def _aggregate_smell_occurrences(df):
+    grouped = (
+        df.groupby(["repository", "commit_hash", "path"], as_index=False)
+        .agg(
+            annotated_smells=("smell", lambda s: sorted(set(s))),
+            annotation_count=("id", "count"),
+            smell_occurrence_ids=("id", lambda s: sorted(s.tolist())),
+        )
+    )
+    return grouped.rename(columns={"repository": "repo_url", "path": "file_path"})
 
 
-# --------------------------------------------------------------------
-# JSON incremental saving
-# --------------------------------------------------------------------
 def save_json(json_file, json_data):
     try:
         with open(json_file, "r") as f:
             existing_data = json.load(f)
-    except:
+    except (FileNotFoundError, json.JSONDecodeError):
         existing_data = []
 
     existing_data.extend(json_data)
-
     with open(json_file, "w") as f:
         json.dump(existing_data, f, indent=4)
-
     print(f"Saved batch of {len(json_data)} entries.")
 
 
-# --------------------------------------------------------------------
-# Inputs (só executa quando rodar o script, não ao importar)
-# --------------------------------------------------------------------
+def process_dataset(original_csv_file, json_file, csv_file_with_source_code, batch_size=50):
+    """Read mlcq_smell_occurrences.csv, group by unique file, fetch file_content
+    once per file, and write mlcq_files.csv (one row per file with the smell-level
+    aggregations as arrays).
+    """
+    occurrences = pd.read_csv(original_csv_file, sep=";")
+    occurrences = occurrences[
+        occurrences["smell"].isin(TARGET_SMELLS)
+        & occurrences["severity"].isin(RELEVANT_SEVERITIES)
+    ].copy()
+    occurrences = _dedup_by_file_and_smell(occurrences, file_path_col="path")
+
+    files = _aggregate_smell_occurrences(occurrences)
+
+    request_count = 0
+    file_contents = []
+    json_buffer = []
+    skipped = []
+
+    for idx, row in tqdm(files.iterrows(), total=len(files), desc="Fetching files"):
+        full_file, request_count = fetch_full_file(
+            row["repo_url"], row["commit_hash"], row["file_path"], request_count
+        )
+        file_contents.append(full_file)
+
+        if full_file is None:
+            skipped.append(
+                {
+                    "repo_url": row["repo_url"],
+                    "commit_hash": row["commit_hash"],
+                    "file_path": row["file_path"],
+                    "reason": "Failed to fetch file",
+                }
+            )
+            continue
+
+        json_buffer.append(
+            {
+                "repo_url": row["repo_url"],
+                "commit_hash": row["commit_hash"],
+                "file_path": row["file_path"],
+                "file_content": full_file,
+                "annotated_smells": row["annotated_smells"],
+                "annotation_count": int(row["annotation_count"]),
+                "smell_occurrence_ids": row["smell_occurrence_ids"],
+            }
+        )
+        if (idx + 1) % batch_size == 0:
+            save_json(json_file, json_buffer)
+            json_buffer = []
+
+    if json_buffer:
+        save_json(json_file, json_buffer)
+
+    files["file_content"] = file_contents
+    files = files.dropna(subset=["file_content"]).copy()
+    files.to_csv(csv_file_with_source_code, sep=";", index=False)
+
+    print("\n=== Processing Summary ===")
+    print(f"Unique files in input:        {len(file_contents)}")
+    print(f"Successfully fetched:         {len(files)}")
+    print(f"Skipped (fetch failures):     {len(skipped)}")
+    print(f"CSV saved to:                 {csv_file_with_source_code}")
+
+    if skipped:
+        skipped_file = csv_file_with_source_code.replace(".csv", "_skipped.csv")
+        pd.DataFrame(skipped).to_csv(skipped_file, index=False)
+        print(f"Skipped entries saved to:     {skipped_file}")
+
+
 if __name__ == "__main__":
-    original_csv_file = "original_mlcq_samples.csv"
-    json_file = "original_mlcq_samples.json"
-    csv_file_with_source_code = "mlcq_samples_with_source_code.csv"
-    process_dataset(original_csv_file, json_file, csv_file_with_source_code)
+    process_dataset(
+        original_csv_file="mlcq_smell_occurrences.csv",
+        json_file="mlcq_files.json",
+        csv_file_with_source_code="mlcq_files.csv",
+    )

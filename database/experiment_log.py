@@ -187,6 +187,138 @@ def get_prompts(experiment_id: int) -> List[Mapping[str, Any]]:
         connection.close()
 
 
+EVALUATION_TARGET_SMELLS = ("long method", "feature envy", "data class")
+EVALUATION_TARGET_SEVERITIES = ("major", "critical")
+
+
+def fetch_unlabeled_pairs(
+    annotator: str,
+    limit: Optional[int] = None,
+    demo_only: Optional[bool] = None,
+) -> List[Mapping[str, Any]]:
+    connection = _open_connection()
+    try:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            query = """
+                SELECT
+                    r.id            AS llm_result_id,
+                    o.id            AS smell_occurrence_id,
+                    f.file_path,
+                    f.file_content,
+                    o.code_snippet,
+                    o.code_name,
+                    o.start_line,
+                    o.end_line,
+                    LOWER(o.smell)  AS oracle_smell,
+                    o.severity      AS oracle_severity,
+                    o.type          AS oracle_granularity,
+                    r.response      AS llm_response
+                FROM llm_prompt_results r
+                JOIN mlcq_files            f ON f.id = r.mlcq_file_id
+                JOIN mlcq_smell_occurrences o ON o.id = ANY(f.smell_occurrence_ids)
+                LEFT JOIN evaluation_labels el
+                       ON el.llm_result_id       = r.id
+                      AND el.smell_occurrence_id = o.id
+                      AND el.annotator           = %s
+                WHERE r.success = TRUE
+                  AND r.response IS NOT NULL
+                  AND LOWER(o.smell) IN %s
+                  AND o.severity IN %s
+                  AND el.id IS NULL
+            """
+            parameters: List[Any] = [
+                annotator,
+                EVALUATION_TARGET_SMELLS,
+                EVALUATION_TARGET_SEVERITIES,
+            ]
+            if demo_only is True:
+                query += " AND f.demo_set = TRUE"
+            elif demo_only is False:
+                query += " AND f.demo_set = FALSE"
+            query += " ORDER BY r.id, o.id"
+            if limit is not None:
+                query += " LIMIT %s"
+                parameters.append(limit)
+            cursor.execute(query, tuple(parameters))
+            return [dict(row) for row in cursor.fetchall()]
+    finally:
+        connection.close()
+
+
+def upsert_evaluation_labels(rows: Iterable[Mapping[str, Any]]) -> int:
+    payload = [
+        (
+            row["llm_result_id"],
+            row["smell_occurrence_id"],
+            row["label_config_version"],
+            row["ls_task_id"],
+            row["ls_annotation_id"],
+            row["annotator"],
+            row["label"],
+            row["needs_review"],
+            row.get("comment"),
+            row.get("lead_time_seconds"),
+            row["created_at"],
+        )
+        for row in rows
+    ]
+    if not payload:
+        return 0
+    connection = _open_connection()
+    try:
+        cursor = connection.cursor()
+        execute_values(
+            cursor,
+            """
+            INSERT INTO evaluation_labels (
+                llm_result_id, smell_occurrence_id, label_config_version,
+                ls_task_id, ls_annotation_id, annotator, label,
+                needs_review, comment, lead_time_seconds, created_at
+            )
+            VALUES %s
+            ON CONFLICT (llm_result_id, smell_occurrence_id, annotator) DO UPDATE SET
+                label_config_version = EXCLUDED.label_config_version,
+                ls_task_id           = EXCLUDED.ls_task_id,
+                ls_annotation_id     = EXCLUDED.ls_annotation_id,
+                label                = EXCLUDED.label,
+                needs_review         = EXCLUDED.needs_review,
+                comment              = EXCLUDED.comment,
+                lead_time_seconds    = EXCLUDED.lead_time_seconds,
+                created_at           = EXCLUDED.created_at
+            """,
+            payload,
+        )
+        connection.commit()
+        return cursor.rowcount if cursor.rowcount is not None else len(payload)
+    finally:
+        connection.close()
+
+
+def list_evaluation_labels(annotator: Optional[str] = None) -> List[Mapping[str, Any]]:
+    connection = _open_connection()
+    try:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            if annotator is None:
+                cursor.execute(
+                    """
+                    SELECT * FROM evaluation_labels
+                    ORDER BY created_at DESC
+                    """
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT * FROM evaluation_labels
+                    WHERE annotator = %s
+                    ORDER BY created_at DESC
+                    """,
+                    (annotator,),
+                )
+            return [dict(row) for row in cursor.fetchall()]
+    finally:
+        connection.close()
+
+
 def insert_results(
     experiment_id: int,
     results: Iterable[Mapping],
@@ -199,7 +331,7 @@ def insert_results(
             (
                 experiment_id,
                 result["prompt_id"],
-                result.get("dataset_id"),
+                result.get("mlcq_file_id"),
                 model_key,
                 model_name,
                 result.get("prompt"),
@@ -219,7 +351,7 @@ def insert_results(
             INSERT INTO llm_prompt_results (
                 experiment_id,
                 prompt_id,
-                dataset_id,
+                mlcq_file_id,
                 model_key,
                 model_name,
                 prompt,

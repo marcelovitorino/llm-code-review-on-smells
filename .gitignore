@@ -6,3 +6,7 @@ __pycache__/
 venv/
 .venv/
 datasets/mlcq_enriched_dataset.csv
+datasets/mlcq_files_inserts.sql
+datasets/mlcq_smell_occurrences_inserts.sql
+ls-data/
+integrations/label_studio/snapshots/*.json
