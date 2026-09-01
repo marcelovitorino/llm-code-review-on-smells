@@ -1,0 +1,13 @@
+tag,description
+denial.with_reason,Review denies the target smell and gives an explicit argument about the annotated sample.
+denial.no_reason,Review denies the target smell for the file but gives no argument about the annotated sample.
+denial.not_discussed,Review never engages with the target smell for the annotated sample.
+reason.not_passive_holder,"Ground: the class is said to hold behavior, so it is not a passive data holder."
+reason.legitimate_access,Ground: access to or delegation towards other classes is said to be legitimate.
+reason.interface_or_no_fields,"Ground: the sample is an interface, has no fields, or is a thin subclass."
+reason.generated_code,"Ground: the code is machine generated, so the smell is said not to apply."
+reason.constants_holder,Ground: a constants holder is an idiomatic Java pattern.
+reason.length_acceptable,Ground: the method length is said to be acceptable.
+long_method_main_issue,Review promotes a Long Method from the same file as its headline finding.
+oracle_inconsistent,The annotated sample objectively contradicts the smell the oracle assigned.
+judge_error,The judge classified M although the review points at the target smell; per the decision tree this should be H.
