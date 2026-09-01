@@ -15,9 +15,6 @@
     .codebook th, .codebook td { padding:6px 10px; border:1px solid #e2e8f0; text-align:left; vertical-align:top; }
     .codebook th { background:#f1f5f9; font-weight:600; }
     .codebook td:first-child { white-space:nowrap; }
-    .decision-tree { background:#fafafa; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; margin:14px 0; font-size:0.85em; color:#334155; }
-    .dt-title    { font-weight:600; margin-bottom:4px; }
-    .decision-tree pre { white-space:pre; font-family:ui-monospace,monospace; margin:0; }
   </Style>
 
   <View className="oracle">
@@ -60,6 +57,4 @@
   <View className="h">Comentário (sinônimos, justificativa, dúvida para árbitro)</View>
   <TextArea name="comment" toName="llm_response" rows="6" maxSubmissions="1"
             placeholder="Ex: 'Long Function aceito como sinônimo de Long Method'; 'parte H, parte M — consultar árbitro'"/>
-
-  <HyperText name="decision_tree" value="$decision_tree_html"/>
 </View>

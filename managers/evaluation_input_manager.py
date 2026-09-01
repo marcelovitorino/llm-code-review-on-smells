@@ -4,7 +4,6 @@ from typing import Any, Mapping, Optional, Tuple
 from database.experiment_log import fetch_unlabeled_pairs
 from integrations.label_studio.code_html import (
     CODEBOOK_HTML,
-    DECISION_TREE_HTML,
     build_oracle_details_html,
     render_code_html,
 )
@@ -61,7 +60,6 @@ def _build_task_data(
         "llm_response": pair["llm_response"],
         "oracle_details_html": oracle_details_html,
         "codebook_html": CODEBOOK_HTML,
-        "decision_tree_html": DECISION_TREE_HTML,
     }
 
 

@@ -71,8 +71,12 @@ def _completed_by_identifier(annotation: Any) -> str:
             return completed_by.username
 
     created_username = _field(annotation, "created_username")
-    if created_username:
-        return created_username
+    if isinstance(created_username, str) and created_username.strip():
+        before_comma = created_username.rsplit(",", 1)[0].strip()
+        tokens = before_comma.split()
+        if tokens:
+            return tokens[-1]
+        return before_comma
 
     if isinstance(completed_by, Mapping):
         return str(completed_by.get("id", "unknown"))

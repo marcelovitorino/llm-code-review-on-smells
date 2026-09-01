@@ -75,6 +75,9 @@ def build_oracle_details_html(
     )
 
 
+# Section 6 of the labeling manual. No longer rendered in the labeling panel
+# (removed from v1.xml in place); kept here as the codified reference and so the
+# block can be restored with a one-line change.
 DECISION_TREE_HTML = """<div class="decision-tree">
 <div class="dt-title">Árvore de decisão (em caso de dúvida)</div>
 <pre>1. A resposta do LLM nomeia o smell-alvo (ou um sinônimo aceito)?

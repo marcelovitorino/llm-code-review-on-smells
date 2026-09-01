@@ -203,6 +203,7 @@ def fetch_unlabeled_pairs(
                 SELECT
                     r.id            AS llm_result_id,
                     o.id            AS smell_occurrence_id,
+                    r.mlcq_file_id  AS mlcq_file_id,
                     f.file_path,
                     f.file_content,
                     o.code_snippet,
@@ -214,14 +215,16 @@ def fetch_unlabeled_pairs(
                     o.type          AS oracle_granularity,
                     r.response      AS llm_response
                 FROM llm_prompt_results r
-                JOIN mlcq_files            f ON f.id = r.mlcq_file_id
-                JOIN mlcq_smell_occurrences o ON o.id = ANY(f.smell_occurrence_ids)
+                JOIN experiment_setup       ep ON ep.id = r.experiment_id
+                JOIN mlcq_files             f  ON f.id = r.mlcq_file_id
+                JOIN mlcq_smell_occurrences o  ON o.id = ANY(f.smell_occurrence_ids)
                 LEFT JOIN evaluation_labels el
                        ON el.llm_result_id       = r.id
                       AND el.smell_occurrence_id = o.id
                       AND el.annotator           = %s
                 WHERE r.success = TRUE
                   AND r.response IS NOT NULL
+                  AND ep.name NOT LIKE 'LLM Judge%%'
                   AND LOWER(o.smell) IN %s
                   AND o.severity IN %s
                   AND el.id IS NULL
@@ -230,6 +233,154 @@ def fetch_unlabeled_pairs(
                 annotator,
                 EVALUATION_TARGET_SMELLS,
                 EVALUATION_TARGET_SEVERITIES,
+            ]
+            if demo_only is True:
+                query += " AND f.demo_set = TRUE"
+            elif demo_only is False:
+                query += " AND f.demo_set = FALSE"
+            query += " ORDER BY r.id, o.id"
+            if limit is not None:
+                query += " LIMIT %s"
+                parameters.append(limit)
+            cursor.execute(query, tuple(parameters))
+            return [dict(row) for row in cursor.fetchall()]
+    finally:
+        connection.close()
+
+
+def get_or_create_judge_setup(
+    experiment_name: str,
+    prompt_text: str,
+    model_key: str,
+    temperature: float,
+    top_p: float,
+    max_tokens: int,
+) -> Tuple[int, int]:
+    connection = _open_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT id FROM experiment_setup WHERE name = %s",
+            (experiment_name,),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            cursor.execute(
+                """
+                INSERT INTO experiment_setup (name, model_key, temperature, top_p, max_tokens)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (experiment_name, model_key, temperature, top_p, max_tokens),
+            )
+            experiment_id = cursor.fetchone()[0]
+        else:
+            experiment_id = row[0]
+        cursor.execute(
+            "SELECT id FROM prompt WHERE experiment_id = %s AND prompt_text = %s",
+            (experiment_id, prompt_text),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            cursor.execute(
+                """
+                INSERT INTO prompt (experiment_id, prompt_text)
+                VALUES (%s, %s)
+                RETURNING id
+                """,
+                (experiment_id, prompt_text),
+            )
+            prompt_id = cursor.fetchone()[0]
+        else:
+            prompt_id = row[0]
+        connection.commit()
+        return experiment_id, prompt_id
+    finally:
+        connection.close()
+
+
+def insert_judge_call(
+    experiment_id: int,
+    prompt_id: int,
+    mlcq_file_id: int,
+    model_key: str,
+    model_name: str,
+    prompt: str,
+    response: str,
+    timestamp: str,
+    duration_seconds: float,
+) -> int:
+    connection = _open_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO llm_prompt_results (
+                experiment_id, prompt_id, mlcq_file_id,
+                model_key, model_name, prompt, response,
+                timestamp, duration_seconds, success, error
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, NULL)
+            RETURNING id
+            """,
+            (
+                experiment_id, prompt_id, mlcq_file_id,
+                model_key, model_name, prompt, response,
+                timestamp, duration_seconds,
+            ),
+        )
+        new_id = cursor.fetchone()[0]
+        connection.commit()
+        return new_id
+    finally:
+        connection.close()
+
+
+def fetch_pairs_already_labeled_by_other_annotators(
+    judge_annotator: str,
+    limit: Optional[int] = None,
+    demo_only: Optional[bool] = None,
+) -> List[Mapping[str, Any]]:
+    connection = _open_connection()
+    try:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            query = """
+                SELECT DISTINCT
+                    r.id            AS llm_result_id,
+                    o.id            AS smell_occurrence_id,
+                    r.mlcq_file_id  AS mlcq_file_id,
+                    f.file_path,
+                    f.file_content,
+                    o.code_snippet,
+                    o.code_name,
+                    o.start_line,
+                    o.end_line,
+                    LOWER(o.smell)  AS oracle_smell,
+                    o.severity      AS oracle_severity,
+                    o.type          AS oracle_granularity,
+                    r.response      AS llm_response
+                FROM evaluation_labels existing
+                JOIN llm_prompt_results     r  ON r.id = existing.llm_result_id
+                JOIN experiment_setup       ep ON ep.id = r.experiment_id
+                JOIN mlcq_smell_occurrences o  ON o.id = existing.smell_occurrence_id
+                JOIN mlcq_files             f  ON f.id = r.mlcq_file_id
+                LEFT JOIN evaluation_labels judge_label
+                       ON judge_label.llm_result_id       = existing.llm_result_id
+                      AND judge_label.smell_occurrence_id = existing.smell_occurrence_id
+                      AND judge_label.annotator           = %s
+                WHERE r.success = TRUE
+                  AND r.response IS NOT NULL
+                  AND ep.name NOT LIKE 'LLM Judge%%'
+                  AND LOWER(o.smell) IN %s
+                  AND o.severity IN %s
+                  AND existing.annotator != %s
+                  AND judge_label.id IS NULL
+            """
+            parameters: List[Any] = [
+                judge_annotator,
+                EVALUATION_TARGET_SMELLS,
+                EVALUATION_TARGET_SEVERITIES,
+                judge_annotator,
             ]
             if demo_only is True:
                 query += " AND f.demo_set = TRUE"
