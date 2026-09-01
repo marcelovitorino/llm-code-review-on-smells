@@ -1,0 +1,464 @@
+[
+  {
+    "id": 719,
+    "task": 403,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.eclipse.hono.config.SignatureSupportingConfigP"
+  },
+  {
+    "id": 732,
+    "task": 323,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.eclipse.ice.reactor.plant.Subchannel"
+  },
+  {
+    "id": 866,
+    "task": 308,
+    "smell": "data class",
+    "category": "Framework-generated",
+    "code_name": "org.eclipse.vorto.repository.importer.ipso.ObjectF"
+  },
+  {
+    "id": 1048,
+    "task": 203,
+    "smell": "data class",
+    "category": "Framework-generated",
+    "code_name": "com.google.j2cl.ast.FieldDescriptor.Builder"
+  },
+  {
+    "id": 1103,
+    "task": 141,
+    "smell": "data class",
+    "category": "Constants holder",
+    "code_name": "javax.xml.xpath.XPathConstants"
+  },
+  {
+    "id": 2023,
+    "task": 346,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.atlas.utils.AtlasPerfTracer"
+  },
+  {
+    "id": 2035,
+    "task": 153,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.cloudstack.api.command.admin.ca.RevokeC"
+  },
+  {
+    "id": 3605,
+    "task": 437,
+    "smell": "data class",
+    "category": "Constants holder",
+    "code_name": "org.apache.rocketmq.common.constant.DBMsgConstants"
+  },
+  {
+    "id": 3707,
+    "task": 138,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.camel.component.infinispan.embedded.Inf"
+  },
+  {
+    "id": 4118,
+    "task": 291,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.apache.storm.stats.BoltExecutorStats"
+  },
+  {
+    "id": 4240,
+    "task": 317,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.apache.maven.scm.provider.perforce.PerforceScm"
+  },
+  {
+    "id": 4284,
+    "task": 296,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.apache.jena.sparql.expr.ExprList"
+  },
+  {
+    "id": 4439,
+    "task": 161,
+    "smell": "data class",
+    "category": "Interface",
+    "code_name": "org.apache.cayenne.template.parser.ExpressionNode"
+  },
+  {
+    "id": 5190,
+    "task": 71,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.commons.jelly.tags.define.TagTag"
+  },
+  {
+    "id": 5550,
+    "task": 215,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.springframework.security.access.intercept.aopa"
+  },
+  {
+    "id": 5553,
+    "task": 455,
+    "smell": "data class",
+    "category": "Interface",
+    "code_name": "org.springframework.ide.eclipse.aop.core.model.IAo"
+  },
+  {
+    "id": 5796,
+    "task": 237,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.springframework.web.context.support.ServletCon"
+  },
+  {
+    "id": 5805,
+    "task": 304,
+    "smell": "data class",
+    "category": "Interface",
+    "code_name": "org.apache.cxf.jaxrs.rx2.client.FlowableRxInvoker"
+  },
+  {
+    "id": 5930,
+    "task": 84,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.tinkerpop.gremlin.structure.Property.Ex"
+  },
+  {
+    "id": 6254,
+    "task": 81,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "com.epam.wilma.service.configuration.StubConfigura"
+  },
+  {
+    "id": 6363,
+    "task": 349,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.apache.drill.common.expression.fn.JodaDateVali"
+  },
+  {
+    "id": 6405,
+    "task": 458,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "com.google.j2cl.common.Problems"
+  },
+  {
+    "id": 6424,
+    "task": 152,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.flink.runtime.jobmaster.factories.Defau"
+  },
+  {
+    "id": 7110,
+    "task": 165,
+    "smell": "data class",
+    "category": "Framework-generated",
+    "code_name": "org.apache.sis.internal.jaxb.code.DQ_EvaluationMet"
+  },
+  {
+    "id": 7611,
+    "task": 386,
+    "smell": "data class",
+    "category": "Interface",
+    "code_name": "org.springframework.statemachine.region.Region"
+  },
+  {
+    "id": 7686,
+    "task": 461,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.apache.skywalking.oap.server.core.analysis.dat"
+  },
+  {
+    "id": 9748,
+    "task": 420,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.eclipse.texlipse.builder.XelatexRunner"
+  },
+  {
+    "id": 10284,
+    "task": 329,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "org.eclipse.jetty.util.ProcessorUtils"
+  },
+  {
+    "id": 10360,
+    "task": 332,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "com.ibm.dtfj.corereaders.zos.util.ObjectLruCache"
+  },
+  {
+    "id": 10618,
+    "task": 398,
+    "smell": "data class",
+    "category": "Framework-generated",
+    "code_name": "org.apache.cloudstack.api.response.DeploymentPlann"
+  },
+  {
+    "id": 10632,
+    "task": 421,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.hadoop.mapreduce.task.ReduceContextImpl"
+  },
+  {
+    "id": 11149,
+    "task": 301,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "com.oracle.truffle.api.TruffleFile.Walker.Event"
+  },
+  {
+    "id": 11205,
+    "task": 273,
+    "smell": "data class",
+    "category": "Long Method bias",
+    "code_name": "ms.tfs.workitemtracking.configurationsettingsservi"
+  },
+  {
+    "id": 13785,
+    "task": 211,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.apache.royale.compiler.ant.config.ConfigBoolea"
+  },
+  {
+    "id": 15059,
+    "task": 151,
+    "smell": "data class",
+    "category": "Behavior present",
+    "code_name": "org.springframework.aop.support.StaticMethodMatche"
+  },
+  {
+    "id": 622,
+    "task": 384,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.zookeeper.graph.JsonGenerator.JsonGener"
+  },
+  {
+    "id": 641,
+    "task": 11,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.zookeeper.server.auth.KerberosName.Rule"
+  },
+  {
+    "id": 761,
+    "task": 411,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.eclipse.kapua.service.authorization.group.shir"
+  },
+  {
+    "id": 805,
+    "task": 17,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.eclipse.orion.server.cf.loggregator.Loggregato"
+  },
+  {
+    "id": 1952,
+    "task": 235,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.accumulo.server.util.ListVolumesUsed.li"
+  },
+  {
+    "id": 3061,
+    "task": 160,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "com.oracle.bmc.budget.model.CreateBudgetDetails.Bu"
+  },
+  {
+    "id": 3063,
+    "task": 16,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.apache.tinkerpop.gremlin.process.traversal.uti"
+  },
+  {
+    "id": 3845,
+    "task": 38,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.apache.commons.beanutils2.PropertyUtils.getPro"
+  },
+  {
+    "id": 3877,
+    "task": 348,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "com.google.javascript.rhino.jstype.AllType#recursi"
+  },
+  {
+    "id": 3904,
+    "task": 373,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.cayenne.exp.parser.ASTEqual.evaluateImp"
+  },
+  {
+    "id": 4060,
+    "task": 143,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.isis.schema.services.jaxb.JaxbServiceDe"
+  },
+  {
+    "id": 4255,
+    "task": 385,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.cxf.wsn.client.CreatePullPoint#create S"
+  },
+  {
+    "id": 5129,
+    "task": 330,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.eclipse.tycho.p2.target.filters.TargetPlatform"
+  },
+  {
+    "id": 5410,
+    "task": 297,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.apache.directory.api.ldap.model.schema.registr"
+  },
+  {
+    "id": 5666,
+    "task": 408,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.eclipse.birt.core.fs.LocalFile#mkdirs"
+  },
+  {
+    "id": 5787,
+    "task": 73,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.poi.xssf.model.TestCommentsTable#writeR"
+  },
+  {
+    "id": 6154,
+    "task": 287,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.asterix.dataflow.data.nontagged.serde.A"
+  },
+  {
+    "id": 6390,
+    "task": 392,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.eclipse.birt.report.designer.ui.ide.navigator."
+  },
+  {
+    "id": 8254,
+    "task": 224,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.commons.net.discard.DiscardUDPClient#se"
+  },
+  {
+    "id": 8527,
+    "task": 277,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "jdk.management.jfr.ConfigurationInfo.Configuration"
+  },
+  {
+    "id": 9274,
+    "task": 173,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "org.apache.flink.graph.types.valuearray.DoubleValu"
+  },
+  {
+    "id": 9351,
+    "task": 184,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "sun.nio.fs.WindowsSecurity.openProcessToken int"
+  },
+  {
+    "id": 9477,
+    "task": 424,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.pig.PigServer.PigServer PigContext|bool"
+  },
+  {
+    "id": 9728,
+    "task": 144,
+    "smell": "feature envy",
+    "category": "Small snippet",
+    "code_name": "com.facebook.buck.core.model.impl.InMemoryBuildFil"
+  },
+  {
+    "id": 10606,
+    "task": 344,
+    "smell": "feature envy",
+    "category": "Other",
+    "code_name": "org.graalvm.visualvm.lib.profiler.snaptracer.impl."
+  },
+  {
+    "id": 10700,
+    "task": 94,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "com.facebook.buck.cli.AuditRulesCommand#runWithout"
+  },
+  {
+    "id": 10804,
+    "task": 178,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.qpid.server.security.access.config.AclF"
+  },
+  {
+    "id": 10919,
+    "task": 42,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.camel.component.disruptor.DisruptorComp"
+  },
+  {
+    "id": 12805,
+    "task": 100,
+    "smell": "feature envy",
+    "category": "Design pattern defense",
+    "code_name": "org.eclipse.elk.alg.radial.options.#create"
+  },
+  {
+    "id": 14835,
+    "task": 80,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.fop.svg.AbstractFOPImageElementBridge#c"
+  },
+  {
+    "id": 15149,
+    "task": 101,
+    "smell": "feature envy",
+    "category": "Long Method bias",
+    "code_name": "org.apache.aries.spifly.statictool.Main.weaveDir F"
+  }
+]
